@@ -34,7 +34,7 @@ export const Login = () => {
         ["password"]: "Write Correct Password",
       });
     } else {
-      sessionStorage.setItem("token", "hiuhi  hjbjbsjgw729vfv22vch");
+      sessionStorage.setItem("token", "hiuhifhhjbjbsjgw729vfv22vch");
       navigate("/landingPage");
     }
   };

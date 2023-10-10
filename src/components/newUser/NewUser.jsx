@@ -11,6 +11,7 @@ export const NewUser = () => {
     password: "",
     confPass: "",
   });
+
   const [error, setError] = useState({
     firstName: "",
     lastName: "",

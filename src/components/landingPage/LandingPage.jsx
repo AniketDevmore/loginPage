@@ -1,17 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import welcomeImg from "../../../public/images/welcome.jpg";
 
 export const LandingPage = () => {
-  let onlineCheck = navigator.onLine ? true : false;
+  const [online, setOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const onlineHandler = () => {
+      setOnline(true);
+    };
+
+    const offlineHandler = () => {
+      setOnline(false);
+    };
+
+    window.addEventListener("online", onlineHandler);
+    window.addEventListener("offline", offlineHandler);
+
+    return () => {
+      window.removeEventListener("online", onlineHandler);
+      window.removeEventListener("offline", offlineHandler);
+    };
+  }, []);
 
   return (
-    <>
-      {onlineCheck ? (
-        <div style={{ textAlign: "center" }} className="container">
-          <h1>Welcome</h1>
-        </div>
+    <div>
+      {online ? (
+        <img src={welcomeImg} alt="welcome" />
       ) : (
-        <div>Offline</div>
+        <img src="" alt="offline" />
       )}
-    </>
+    </div>
   );
 };
