@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +7,7 @@ export const Login = () => {
     email: "",
     password: "",
   });
+
   const [error, setError] = useState({
     email: "",
     password: "",
@@ -25,19 +26,29 @@ export const Login = () => {
 
   //   login new user
   const loginHandle = () => {
-    if (loginData.email !== localStorage.getItem("email")) {
+    if (loginData.email === "") {
       setError({ ...error, ["email"]: "Write Correct Email" });
-    } else if (loginData.password !== localStorage.getItem("password")) {
-      setError({
-        ...error,
-        ["email"]: "",
-        ["password"]: "Write Correct Password",
-      });
+    } else if (loginData.password === "") {
+      setError({ ...error, ["password"]: "Write Your Password" });
     } else {
-      sessionStorage.setItem("token", "hiuhifhhjbjbsjgw729vfv22vch");
-      navigate("/landingPage");
+      if (
+        loginData.password !== localStorage.getItem("password") &&
+        loginData.email !== localStorage.getItem("email")
+      ) {
+        alert("Invalid Email or Password!");
+      } else {
+        sessionStorage.setItem("token", "hiuhifhhjbjbsjgw729vfv22vch");
+        navigate("/landingPage");
+      }
     }
   };
+
+  useEffect(() => {
+    setError({
+      email: "",
+      password: "",
+    });
+  }, [loginData]);
 
   return (
     <div className="container">
@@ -50,7 +61,9 @@ export const Login = () => {
           placeholder="Write Your Email Here..."
           onChange={changeHandle}
         />
-        <p style={{ color: "red" }}>{error.email}</p>
+        {error.email === "" ? null : (
+          <p style={{ color: "red" }}>{error.email}</p>
+        )}
       </div>
 
       <div className="outerContainer">
@@ -62,7 +75,9 @@ export const Login = () => {
           placeholder="Write Your Password Here..."
           onChange={changeHandle}
         />
-        <p style={{ color: "red" }}>{error.password}</p>
+        {error.password === "" ? null : (
+          <p style={{ color: "red" }}>{error.password}</p>
+        )}
       </div>
 
       <div className="outerContainer">

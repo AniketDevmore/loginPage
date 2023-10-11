@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import passwordValidator from "password-validator";
+import { useEffect } from "react";
 
 export const NewUser = () => {
   const navigate = useNavigate();
@@ -20,82 +22,111 @@ export const NewUser = () => {
     password: "",
     confPass: "",
   });
+  const passwordSchema = new passwordValidator();
 
-  const changehandler = (event) => {
-    let data = { ...newUserData, [event.target.name]: event.target.value };
-    setNewUserData(data);
-  };
+  // password validation
+  const validatePassword = (value) => {
+    passwordSchema
+      .is()
+      .min(8)
+      .has()
+      .digits(1)
+      .has()
+      .symbols(1)
+      .has()
+      .uppercase(1);
 
-  const newUserSubmitHandler = () => {
-    // e.preventDefault();
-    if (!newUserData.firstName) {
-      setError({ ["firstName"]: "Write First Name" });
-    } else if (!newUserData.lastName) {
+    if (passwordSchema.validate(value)) {
+      setError({ ...error, ["password"]: "" });
+      return value;
+    } else {
       setError({
         ...error,
-        ["firstName"]: "",
-        ["lastName"]: "Write Last Name",
+        ["password"]:
+          "Password should contain atleast one number and one special charactor, one capital letter and should be 8 digits long!",
       });
-    } else if (!newUserData.email) {
-      setError({ ...error, ["lastName"]: "", ["email"]: "Write Eamil" });
-    } else if (!newUserData.mobile) {
-      setError({ ...error, ["email"]: "", ["mobile"]: "Write Mobile Number" });
-    } else if (!newUserData.password) {
-      setError({ ...error, ["mobile"]: "", ["password"]: "Write Password" });
-    } else {
-      // check for length
-      if (newUserData.password.length < 8) {
-        setError({
-          ...error,
-          ["confPass"]: "",
-          ["password"]: "Password should be atleat 8 digit long",
-        });
-      } else {
-        // check for special charctor
-        let flag = false;
-        for (let i = 0; i < newUserData.password.length; i++) {
-          if (
-            newUserData.password[i] === "!" ||
-            newUserData.password[i] === "@" ||
-            newUserData.password[i] === "#" ||
-            newUserData.password[i] === "$" ||
-            newUserData.password[i] === "%" ||
-            newUserData.password[i] === "^" ||
-            newUserData.password[i] === "&" ||
-            newUserData.password[i] === "*"
-          ) {
-            flag = true;
-          }
-        }
+    }
+  };
 
-        if (!flag) {
-          setError({
-            ...error,
-            ["confPass"]: "",
-            ["password"]:
-              "Password should contain atleast one special charactor",
-          });
-        } else {
-          if (newUserData.password !== newUserData.confPass) {
-            setError({
-              ...error,
-              ["password"]: "",
-              ["confPass"]: "Confirm Password",
-            });
-          } else {
-            setError({ ...error, ["confPass"]: "" });
-            localStorage.setItem("firstName", newUserData.firstName);
-            localStorage.setItem("lastName", newUserData.lastName);
-            localStorage.setItem("email", newUserData.email);
-            localStorage.setItem("mobile", newUserData.mobile);
-            localStorage.setItem("password", newUserData.password);
-            navigate("/");
-          }
-        }
+  // error handling function
+  const addError = (name) => {
+    for (let err in error) {
+      if (err === name) {
+        setError({ ...error, [name]: `Please enter ${name}` });
       }
     }
   };
 
+  const removeError = () => {
+    setError({
+      firstName: "",
+      lastName: "",
+      email: "",
+      mobile: "",
+      password: "",
+      confPass: "",
+    });
+  };
+
+  //  input value change handler
+  const changehandler = (event) => {
+    let name = event.target.name;
+    let data = event.target.value;
+    if (name === "password") {
+      if (validatePassword(data)) {
+        setNewUserData({ ...newUserData, [name]: data });
+      }
+    } else {
+      setNewUserData({ ...newUserData, [name]: data });
+    }
+  };
+
+  //  new user button handler
+  const newUserSubmitHandler = (e) => {
+    e.preventDefault();
+    if (!newUserData.firstName) {
+      removeError();
+      addError("firstName");
+    } else if (!newUserData.lastName) {
+      removeError();
+      addError("lastName");
+    } else if (!newUserData.email) {
+      removeError();
+      addError("email");
+    } else if (!newUserData.mobile) {
+      removeError();
+      addError("mobile");
+    } else if (!newUserData.password) {
+      removeError();
+      addError("password");
+    } else if (!newUserData.confPass) {
+      removeError();
+      addError("confPass");
+    } else {
+      if (newUserData.password !== newUserData.confPass) {
+        alert("Please Confirm Your Password!");
+      } else {
+        removeError();
+        localStorage.setItem("firstName", newUserData.firstName);
+        localStorage.setItem("lastName", newUserData.lastName);
+        localStorage.setItem("email", newUserData.email);
+        localStorage.setItem("mobile", newUserData.mobile);
+        localStorage.setItem("password", newUserData.password);
+        navigate("/");
+      }
+    }
+  };
+
+  useEffect(() => {
+    setError({
+      firstName: "",
+      lastName: "",
+      email: "",
+      mobile: "",
+      password: "",
+      confPass: "",
+    });
+  }, [newUserData]);
   return (
     <div className="container">
       <div className="outerContainer">
@@ -107,7 +138,9 @@ export const NewUser = () => {
           placeholder="Write your first name here..."
           type="text"
         />
-        <p style={{ color: "red" }}>{error.firstName}</p>
+        {error.firstName === "" ? null : (
+          <p style={{ color: "red" }}>{error.firstName}</p>
+        )}
       </div>
 
       <div className="outerContainer">
@@ -119,7 +152,9 @@ export const NewUser = () => {
           placeholder="Write your last name here..."
           type="text"
         />
-        <p style={{ color: "red" }}>{error.lastName}</p>
+        {error.lastName === "" ? null : (
+          <p style={{ color: "red" }}>{error.lastName}</p>
+        )}
       </div>
 
       <div className="outerContainer">
@@ -131,7 +166,9 @@ export const NewUser = () => {
           placeholder="Write your email here..."
           type="email"
         />
-        <p style={{ color: "red" }}>{error.email}</p>
+        {error.email === "" ? null : (
+          <p style={{ color: "red" }}>{error.email}</p>
+        )}
       </div>
 
       <div className="outerContainer">
@@ -143,7 +180,9 @@ export const NewUser = () => {
           placeholder="Write your mobile number here..."
           type="tel"
         />
-        <p style={{ color: "red" }}>{error.mobile}</p>
+        {error.mobile === "" ? null : (
+          <p style={{ color: "red" }}>{error.mobile}</p>
+        )}
       </div>
 
       <div className="outerContainer">
@@ -155,7 +194,9 @@ export const NewUser = () => {
           placeholder="Write your password here..."
           type="text"
         />
-        <p style={{ color: "red" }}>{error.password}</p>
+        {error.password === "" ? null : (
+          <p style={{ color: "red" }}>{error.password}</p>
+        )}
       </div>
 
       <div className="outerContainer">
@@ -164,10 +205,12 @@ export const NewUser = () => {
           onChange={changehandler}
           id="confPass"
           name="confPass"
-          placeholder="Cconfirm Password"
+          placeholder="Confirm Password"
           type="text"
         />
-        <p style={{ color: "red" }}>{error.confPass}</p>
+        {error.confPass === "" ? null : (
+          <p style={{ color: "red" }}>{error.confPass}</p>
+        )}
       </div>
 
       <div className="outerContainer">
